@@ -11,16 +11,23 @@ class Parser {
     
     const buffer = originalFileContent.split('');
     
+    let finalText = '';
+
     for (let i=0; i<buffer.length; i++) {
 
       if (buffer[i] == '<') {
         let currentTag = getHTMLTag(buffer, i);
         i = currentTag.index;
-        //console.log(JSON.stringify(currentTag.content, null, 2));
+        finalText += currentTag.code;
+      } else {
+
+        finalText += buffer[i];
+
       }
 
     }
 
+    console.log(finalText);
   
   }
 
