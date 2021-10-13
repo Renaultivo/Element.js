@@ -1,59 +1,27 @@
+const { getScope } = require("../common/ScopeHandler");
+const { skipEmptyScapes } = require("../common/TextHandler");
+
+
 const invalidNameChars = [
   ' ', '<', '>', '=', '/', '\\', '-', '"', '\'', '?', ';', ','
 ];
 
-
-const validHTLMTags = [
-  ''
+const elementJSProps = [
+  'id',
+  'class',
+  'style',
+  'ripple',
+  'event'
 ];
 
-function skipEmptyScapes(buffer, index) {
 
-  for (; buffer[index] == ' '; index++);
-
-  return index;
-
-}
-
-function getScope(buffer, index, delimiters = ['{', '}']) {
-
-  let content = '';
-
-  index = skipEmptyScapes(buffer, index);
-
-  let scopeCounter = 0;
-
-  for (;  index < buffer.length ; index++) {
-
-    if (buffer[index] == delimiters[0]) {
-      scopeCounter++;
-    } else if (buffer[index] == delimiters[1] && buffer[index-1] != '\\') {
-
-      scopeCounter--;
-      
-      if (scopeCounter <= 0) {
-        break;
-      }
-
-    }
-
-    content += buffer[index];
-
-  }
-  
-  return {
-    content,
-    index
-  }
-
-}
 
 function getName(buffer, index) {
 
   let name = '';
 
   index = skipEmptyScapes(buffer, index);
-
+  
   for (; index < buffer.length && invalidNameChars.indexOf(buffer[index]) == -1; index++) {
     name += buffer[index];
   }
@@ -151,9 +119,9 @@ function parseProps(propsAsText) {
 
       } else if (buffer[index] == '{') {
 
-        const scope = getScope(buffer, index+1);
+        const scope = getScope(buffer, index+1, ['{', '}'], 1);
 
-        index = scope.index;
+        index = scope.index+1;
 
         props.push({
           name: propName.name,
@@ -175,9 +143,7 @@ function parseProps(propsAsText) {
 
       }
 
-    } else {
-
-      if (propName.name != '') {
+    } else if (propName.name != '') {
         
         props.push({
           name: propName.name,
@@ -185,9 +151,6 @@ function parseProps(propsAsText) {
         });
 
       }
-
-    }
-
   }
 
   return props;
@@ -204,27 +167,27 @@ function getHTMLTagNameAndPropsAndProps(buffer, index) {
   return {
     name: name.name,
     props: parseProps(props.content),
+    isEmpty: props.content[props.content.length-1] == '/',
     index
   };
 
 }
 
-function getHTMLTagContent(tagNameAndProps, buffer, index, identation='  ') {
+function getHTMLTagContent(props) {
 
   let content = new Array();
-
-  let counter = 0;
 
   let textBuffer = '';
  
   function saveTextBuffer() {
 
     if (textBuffer.trim() != '') {
-      
+
       content.push({
         type: 'string',
         quote: "'",
-        content: textBuffer
+        content: textBuffer.trim().replace(/\n/g, '\\n').replace(/  /g, ''),
+        identation: props.identation + '  ',
       });
 
       textBuffer = '';
@@ -233,43 +196,70 @@ function getHTMLTagContent(tagNameAndProps, buffer, index, identation='  ') {
 
   }
 
-  for (;  index < buffer.length ; index++) {
+  for (;  props.index < props.buffer.length ; props.index++) {
 
-    if (buffer[index] == '<') {
+    if (props.buffer[props.index] == '<') {
       
       saveTextBuffer();
 
-      if (buffer[index+1] != '/') {
+      let currentTag = getHTMLTagNameAndPropsAndProps(
+        props.buffer,
+        props.index + (props.buffer[props.index+1] != '/' ? 1 : 2)
+      );
 
-        let currentTag = getHTMLTagNameAndPropsAndProps(buffer, index+1);
-        const currentTagContent = getHTMLTagContent(currentTag.name, buffer, currentTag.index+1, identation + '  ');
+      if (currentTag.isEmpty
+        && props.buffer[props.index+1] != '/') {
 
-        if (currentTag.name == tagNameAndProps) {
-          counter++;
-        }
-
-        index = currentTagContent.index;
+        props.index = currentTag.index;
         
         content.push({
           tag: currentTag.name,
           props: currentTag.props,
           type: 'tag',
-          identation: currentTagContent.identation,
-          content: currentTagContent.content
+          content: null,
+          isEmpty: true,
+          identation: props.identation
+        });
+
+      } else if (props.buffer[props.index+1] != '/') {
+
+        console.log('second else if ', props.buffer[props.index+1]);
+
+        if (currentTag.name == props.currentTagName) {
+          props.counter++;
+        }
+
+        const currentTagContent = getHTMLTagContent({
+          currentTagName: currentTag.name,
+          buffer: props.buffer,
+          index: currentTag.index+1,
+          identation: props.identation + '  ',
+          counter: -1
+        });
+
+        props.index = currentTagContent.index;
+        
+        content.push({
+          tag: currentTag.name,
+          props: currentTag.props,
+          type: 'tag',
+          content: currentTagContent.content,
+          isEmpty: false,
+          identation: currentTagContent.identation
         });
 
       } else {
 
-        let currentTag = getHTMLTagNameAndPropsAndProps(buffer, index+2);
+        props.index = currentTag.index;
 
-        index = currentTag.index;
+        if (currentTag.name == props.currentTagName) {
+          
+          props.counter--;
+          
+          if (props.counter < 0) {
+            break;
+          }
 
-        if (currentTag.name == tagNameAndProps) {
-          counter--;
-        }
-
-        if (counter < 0) {
-          break;
         }
         
         // TODO
@@ -277,13 +267,13 @@ function getHTMLTagContent(tagNameAndProps, buffer, index, identation='  ') {
 
       }
 
-    } else if (buffer[index] == '{') {
+    } else if (props.buffer[props.index] == '{') {
       
       saveTextBuffer();
 
-      const scope = getScope(buffer, index+1);
+      const scope = getScope(props.buffer, props.index+1);
 
-      index = scope.index;
+      props.index = scope.index;
 
       if (scope.content.trim() != '') {
 
@@ -295,15 +285,15 @@ function getHTMLTagContent(tagNameAndProps, buffer, index, identation='  ') {
       }
 
     } else {
-      textBuffer += buffer[index];
+      textBuffer += props.buffer[props.index];
     }
 
   }
 
   return {
     content,
-    identation,
-    index
+    identation: props.identation,
+    index: props.index
   }
 
 }
@@ -322,12 +312,17 @@ function parserJSXPropToElementJSProp(prop) {
 
 }
 
-const elementJSProps = [
-  'id',
-  'class',
-  'style',
-  'ripple'
-];
+function parseJSXFunction(content, identation='  ') {
+
+  console.log(content.content);
+
+  return `\n${identation}${content.tag}({` + 
+    `\n${identation}  props: ${JSON.stringify(content.props)},` + 
+    `\n${identation}  content: ${JSON.stringify(content.content)},` + 
+    `\n${identation}  isEmpty: ${content.isEmpty}` + 
+  `\n${identation}}),`;
+
+}
 
 function parseJSXContent(content, identation={ current: '', addictional: '' }) {
 
@@ -344,9 +339,15 @@ function parseJSXContent(content, identation={ current: '', addictional: '' }) {
   } else {
 
     if (content.type == 'tag') {
-      text =  identation.addictional + content.identation + HTML_to_ElementJS_Transpiler([content], identation.addictional);
+
+      if (content.tag[0] == String(content.tag[0]).toUpperCase()) {
+        text = parseJSXFunction(content, identation.addictional + content.identation);
+      } else {
+        text = identation.addictional + content.identation + HTML_to_ElementJS_Transpiler([content], identation.addictional);
+      }
+
     } else if (content.type == 'string') {
-      text = `\n${identation.current + identation.addictional}${content.quote}${content.content}${content.quote},`;
+      text = `\n${identation.current + identation.addictional}${content.quote}${content.content.trim()}${content.quote},`;
     } else if (content.type == 'jsx-scope') {
       text = `\n${identation.current + identation.addictional}${content.content},`;
     }
@@ -357,41 +358,58 @@ function parseJSXContent(content, identation={ current: '', addictional: '' }) {
 
 }
 
+function transpileHTMLTag(content) {
+
+  let props = '';
+  let attributes = '';
+
+  if (Array.isArray(content.props)) {
+
+    content.props.forEach((prop) => {
+
+      if (elementJSProps.indexOf(prop.name) != -1) {
+        props +=  '\n    ' + content.identation + parserJSXPropToElementJSProp(prop);
+      } else {
+        attributes += '\n    ' + content.identation + parserJSXPropToElementJSProp(prop);
+      }
+
+    });
+
+  }
+  
+  return `\n${content.identation}createElement({` + 
+    `\n${content.identation}  tag: '${content.tag}',` + 
+    `  ${props}` + 
+    `\n${content.identation}  attributes: {` + 
+    `\n${content.identation}  ${attributes}` + 
+    `\n${content.identation}  },` + 
+    `\n${content.identation}  content: [` + 
+        `${ content.isEmpty ? '' : parseJSXContent(content.content, { current: content.identation, addictional: '  ' })}` + 
+    `\n${content.identation}  ]` + 
+    `\n${content.identation}}),`;
+
+}
+
 function HTML_to_ElementJS_Transpiler(contentList, additionalIdentation='') {
 
   let finalCode = '';
 
   contentList.forEach((content) => {
 
-    content.identation += additionalIdentation;
+    if (content.type == 'tag') {
 
-    let props = '';
-    let attributes = '';
+      content.identation += additionalIdentation;
+      finalCode += transpileHTMLTag(content);
 
-    if (Array.isArray(content.props)) {
+    } else {
 
-      content.props.forEach((prop) => {
-
-        if (elementJSProps.indexOf(prop.name) != -1) {
-          props +=  '\n  ' + content.identation + parserJSXPropToElementJSProp(prop);
-        } else {
-          attributes += '\n  ' + content.identation + parserJSXPropToElementJSProp(prop);
-        }
-
+      finalCode += parseJSXContent(content, {
+        current: content.identation,
+        addictional: additionalIdentation
       });
 
     }
 
-    finalCode += `\n${content.identation}createElement({` + 
-      `\n${content.identation}  tag: '${content.tag}',` + 
-      `  ${props}` + 
-      `\n${content.identation}  attributes: {` + 
-      `\n${content.identation}  ${attributes}` + 
-      `\n${content.identation}  },` + 
-      `\n${content.identation}  content: [` + 
-          `${parseJSXContent(content.content, { current: content.identation, addictional: '  ' })}` + 
-      `\n${content.identation}  ]` + 
-      `\n${content.identation}}),`;
 
   });
 
@@ -399,12 +417,19 @@ function HTML_to_ElementJS_Transpiler(contentList, additionalIdentation='') {
 
 }
 
-function getHTMLTag(buffer, index) {
+function getHTMLTag(buffer, index, identation='') {
 
   index++;
 
   const tagNameAndProps = getHTMLTagNameAndPropsAndProps(buffer, index);
-  const tagContent = getHTMLTagContent(tagNameAndProps.name, buffer, tagNameAndProps.index+1);
+
+  const tagContent = getHTMLTagContent({
+    currentTagName: tagNameAndProps.name,
+    buffer: buffer,
+    index: tagNameAndProps.index+1,
+    identation,
+    counter: 0
+  });
 
   const data = {
     tag: tagNameAndProps.name,
@@ -413,18 +438,18 @@ function getHTMLTag(buffer, index) {
     content: tagContent.content
   }
 
-  //console.log(JSON.stringify(data, null, 2))
+  index = tagContent.index;
 
-  index = tagContent.index
+  let tagAsJSCode = HTML_to_ElementJS_Transpiler([data], identation);
 
-  const tagAsJSCode = HTML_to_ElementJS_Transpiler([data]);
+  tagAsJSCode = tagAsJSCode.substr(0, tagAsJSCode.length-1);
 
   return {
     ...data,
-    code: tagAsJSCode,
     index
   }
 
 }
 
 exports.getHTMLTag = getHTMLTag;
+exports.HTML_to_ElementJS_Transpiler = HTML_to_ElementJS_Transpiler;

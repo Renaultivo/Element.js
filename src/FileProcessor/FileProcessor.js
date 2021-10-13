@@ -4,24 +4,26 @@ const { Parser } = require('./Parser/Parser');
 
 class FileProcessor {
 
-  constructor(fileName = null) {
+  constructor() {
 
     this.parser = new Parser();
 
-    if (fileName) {
-      this.loadFile(fileName);
-    }
-
   }
 
-  loadFile(fileName) {
+  parseFile(fileName) {
 
-    getFileText(fileName).then(result => {
+    return new Promise((resolve, reject) => {
 
-      this.parser.parse(result);
+      getFileText(fileName).then(result => {
 
-    }, err => {
-      console.log('failed :c');
+        let parserResult = this.parser.parse(result);
+        
+        resolve(parserResult);
+
+      }, err => {
+        reject(`failed to load '${fileName}' :c`);
+      });
+
     });
 
   }  

@@ -2,6 +2,7 @@
  * RENAULTIVO WEB SYSTEM
  * Welcome to the Source Code of the Renaultivo Web System :)
  * RELEASE: 08/26/2021
+ * ok?
  */
 
 (() => {
@@ -68,7 +69,14 @@
     } else {
 
       System.toast.open(
-        <div style={styles.main.test}>test</div>
+        <JSX>
+          <div id="first-element baby">
+            <h1 class="title">Hello, {name}!</h1>
+          </div>
+          <div id="second-element">
+            <h1 class="title">second test 321</h1>
+          </div>
+        </JSX>
       );
 
     }
