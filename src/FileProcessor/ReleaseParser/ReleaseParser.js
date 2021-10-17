@@ -34,7 +34,7 @@ class ReleaseParser {
     result = result.replace(/\t/g, ' ');
 
     // remove break likes (\n)
-    result = result.replace(/\n/g, '');
+    /*result = result.replace(/\n/g, '');
 
     // adding semi-collon after "}" when it is in the end of a line
     // (pretty common on "inline-functions")
@@ -47,7 +47,7 @@ class ReleaseParser {
     result = result.replace(/\][a-zA-Z]/g, insertSemiCollonAfterScope);
 
     result = result.replace(/\)\s[a-zA-Z]/g, insertSemiCollonAfterParentesies);
-    result = result.replace(/\)[a-zA-Z]/g, insertSemiCollonAfterParentesies);
+    result = result.replace(/\)[a-zA-Z]/g, insertSemiCollonAfterParentesies);*/
 
 
     return result;

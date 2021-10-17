@@ -94,10 +94,10 @@ function parseProps(propsAsText) {
     let propName = getName(buffer, index);
     let equalCharSearchResult = checkForEqualChar(buffer, propName.index);
 
-    index = equalCharSearchResult.index;
 
     if (equalCharSearchResult.hasEqualChar) {
 
+      index = equalCharSearchResult.index;
       index = skipEmptyScapes(buffer, index+1);
 
       if (buffer[index] == '"' || buffer[index] == "'") {
@@ -150,6 +150,8 @@ function parseProps(propsAsText) {
 
     } else if (propName.name != '') {
         
+        index = propName.index;
+
         props.push({
           name: propName.name,
           type: DATA_TYPE.no_value
@@ -165,7 +167,10 @@ function parseProps(propsAsText) {
 function getHTMLTagNameAndPropsAndProps(buffer, index) {
 
   const name = getName(buffer, index);
-  const props = getScope(buffer, name.index, ['<', '>']);
+  const props = getScope(buffer, name.index, ['<', '>'], 0, {
+    previous: '=',
+    next: ''
+  });
 
   index = props.index;
 
@@ -313,6 +318,8 @@ function parserJSXPropToElementJSProp(prop) {
     text = `${prop.name}: ${prop.quote}${prop.content}${prop.quote},`;
   } else if (prop.type == DATA_TYPE.jsx_scope) {
     text = `${prop.name}: ${prop.content},`;
+  } else if (prop.type == DATA_TYPE.no_value) {
+    text = `${prop.name}: "${prop.name}"`;
   }
 
   return text;
@@ -355,7 +362,7 @@ const propParser = {
     return `${data.name}: ${data.content}`;
   },
   [DATA_TYPE.no_value]: (data) => {
-    return `${data.name}: ${propName}`;
+    return `${data.name}: "${data.name}""`;
   }
 };
 
@@ -368,7 +375,7 @@ function parserJSXPropToJSXFunctionProp(propList) {
     finalText += propParser[prop.type](prop) + ',';
   });
 
-  return finalText.substr(0, finalText.length-2);
+  return finalText.substr(0, finalText.length-1);
 
 }
 
