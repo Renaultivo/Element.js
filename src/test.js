@@ -1,96 +1,64 @@
-/*
- * RENAULTIVO WEB SYSTEM
- * Welcome to the Source Code of the Renaultivo Web System :)
- * RELEASE: 08/26/2021
- * ok?
- */
+const user = {
+  name: 'John',
+  age: 20
+};
 
-(() => {
+console.log("message")
+console.log('common message')
+console.error('error message')
+console.warn('warning message')
 
-  let defaultHandlers = {
-
-  }
-
-  let globalHandlers = {
-
-  }
-
-  const styles = createCSSObject({
-    main: {
-      test: {
-        color: '#DDDDDD',
-        fontSize: '50px'
-      }
+const styles = createCSSObject({
+  body: {
+    top: 0,
+    left: 0,
+    width: '50%'
+  },
+  header: {
+    height: '200px',
+    position: 'fixed',
+    backgroundColor: '#222222'
+  },
+  main: {
+    li: {
+      color: 'orange'
     }
-  });
-
-  function openIntentHandlerOptionsMenu(intent, data=null) {
-    
-    window.System.apps[globalHandlers[intent][0]].onIntent({
-      name: intent,
-      data
-    });
-
   }
+});
 
-  function setDefaultHandler(intent, app) {
-    defaultHandlers[intent] = app;
-  }
+function Header(props) {
 
-  function addGlobalListener(intent, app) {
+  console.log(props);
 
-    if (!globalHandlers[intent]) {
-      globalHandlers[intent] = new Array();
-    }
+  return (
+    <JSX>
+      <header style={styles.header}>
+        <nav>
+          <ul>
+            <li>Logged as  {user.name}</li>
+            <li>Home</li>
+            <li>Donwloads</li>
+            <li>Sign out</li>
+          </ul>
+        </nav>
+      </header>
+    </JSX>
+  );
 
-    globalHandlers[intent].push(app);
-    
-  }
+}
 
-  function handle(intent, data=null) {
-    
-    if (defaultHandlers[intent] != null) {
-
-      defaultHandlers[intent].onIntent(intent, data);
-
-    } else if (globalHandlers[intent] != null) {
-      
-      if (globalHandlers[intent].length > 1) {
-        openIntentHandlerOptionsMenu(intent, data);
-      } else {
-        
-        window.System.apps[globalHandlers[intent][0]].onIntent({
-          name: intent,
-          data
-        });
-  
-      }
-
-    } else {
-
-      System.toast.open(
-        <JSX>
-          <div id="first-element baby">
-            <h1 class="title">Hello, {name}!</h1>
-          </div>
-          <div id="second-element">
-            <h1 class="title">second test 321</h1>
-          </div>
-        </JSX>
-      );
-
-    }
-
-  }
-
-  window.getGlobalIntentListeners = () => {
-    return globalHandlers;
-  }
-
-	window.System.Intent = {
-    handle: handle,
-    setDefaultHandler: setDefaultHandler,
-    addGlobalListener: addGlobalListener    
-  }
-
-})()
+const Index = (
+  <JSX>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <title>Name</title>
+      </head>
+      <body
+        class="flexBoxAlign flexWrap" style={styles.body}>
+        <Header data={ user } />
+        <div>Let   me      see    how it's      going to     handle      spaces    </div>
+      </body>
+    </html>
+  </JSX>
+);

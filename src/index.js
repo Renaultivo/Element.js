@@ -1,6 +1,12 @@
 const fs = require('fs');
 const { getFileText } = require('./FileHandler/FileHandler');
 const { FileProcessor } = require('./FileProcessor/FileProcessor');
+const { ReleaseParser } = require('./FileProcessor/ReleaseParser/ReleaseParser');
+
+let SETTINGS = {
+  buildFolder: 'build',
+  release: false
+};
 
 const fileProcessor = new FileProcessor();
 
@@ -12,7 +18,7 @@ function writeFileToBuildFolder(filePath, content) {
 
   const buffer = Buffer.from(content);
 
-  fs.open(`build/${filePath}`, 'w+', (err, fileDescriptor) => {
+  fs.open(`${SETTINGS.buildFolder}/${filePath}`, 'w+', (err, fileDescriptor) => {
 
     if (!err) {
 
@@ -48,7 +54,7 @@ function updateFile(filePath) {
 
   fileProcessor.parseFile(filePath).then((content) => {
 
-    writeFileToBuildFolder(filePath, content);
+    writeFileToBuildFolder(filePath, SETTINGS.release ? ReleaseParser.parse(content) : content);
 
   });
 
@@ -68,7 +74,7 @@ function watch(path='.') {
 
         createdFolders.push(filePath);
 
-        fs.mkdir(`build/${filePath}`, () => {
+        fs.mkdir(`${SETTINGS.buildFolder}/${filePath}`, () => {
           watch(`${filePath}`);
         });
 
@@ -78,7 +84,7 @@ function watch(path='.') {
           updateFile(filePath);
         } else {
 
-          fs.copyFile(filePath, `build/${filePath}`, () => {
+          fs.copyFile(filePath, `${SETTINGS.buildFolder}/${filePath}`, () => {
             console.log(`${filePath} copied.`);
           });
 
@@ -126,6 +132,20 @@ function watch(path='.') {
 
 }
 
-fs.mkdir('build', () => {
+if (process.argv.length > 2) {
+
+  for (let i=2; i<process.argv.length; i++) {
+
+    if (process.argv[i] == 'release') {
+      SETTINGS.release = true;
+      console.log('release enabled')     
+    }
+
+  }
+
+}
+
+fs.mkdir(SETTINGS.buildFolder, () => {
   watch();
 });
+
