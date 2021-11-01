@@ -164,7 +164,7 @@ function parseProps(propsAsText) {
 
 }
 
-function getHTMLTagNameAndPropsAndProps(buffer, index) {
+function getHTMLTagNameAndProps(buffer, index) {
 
   const name = getName(buffer, index);
   const props = getScope(buffer, name.index, ['<', '>'], 0, {
@@ -190,6 +190,11 @@ function getHTMLTagContent(props) {
   let textBuffer = '';
  
   function saveTextBuffer() {
+
+    if (textBuffer == undefined
+      || textBuffer == null) {
+      return;
+    }
 
     if (textBuffer.trim() != '') {
 
@@ -219,7 +224,7 @@ function getHTMLTagContent(props) {
       
       saveTextBuffer();
 
-      let currentTag = getHTMLTagNameAndPropsAndProps(
+      let currentTag = getHTMLTagNameAndProps(
         props.buffer,
         props.index + (props.buffer[props.index+1] != '/' ? 1 : 2)
       );
@@ -249,7 +254,7 @@ function getHTMLTagContent(props) {
           buffer: props.buffer,
           index: currentTag.index+1,
           identation: props.identation + '  ',
-          counter: -1
+          counter: -2
         });
 
         props.index = currentTagContent.index;
@@ -381,9 +386,13 @@ function parserJSXPropToJSXFunctionProp(propList) {
 
 function parseJSXFunctionCall(content, identation='  ') {
 
+  let props = parserJSXPropToJSXFunctionProp(content.props);
+
+  content.content = parseJSXContent(content.content, { current: identation, addictional: '  ' });
+
   return `\n${identation}${content.tag}({` + 
-    `\n${identation}  ${parserJSXPropToJSXFunctionProp(content.props)},` + 
-    `\n${identation}  content: ${JSON.stringify(content.content)},` + 
+    `\n${identation}  ${props != '' ? props + ',' : ''}` + 
+    `\n${identation}  content: [${content.content}],` + 
     `\n${identation}  isEmpty: ${content.isEmpty}` + 
   `\n${identation}}),`;
 
@@ -486,7 +495,7 @@ function getHTMLTag(buffer, index, identation='') {
 
   index++;
 
-  const tagNameAndProps = getHTMLTagNameAndPropsAndProps(buffer, index);
+  const tagNameAndProps = getHTMLTagNameAndProps(buffer, index);
 
   const tagContent = getHTMLTagContent({
     currentTagName: tagNameAndProps.name,

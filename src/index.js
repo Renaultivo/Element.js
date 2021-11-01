@@ -50,11 +50,30 @@ function writeFileToBuildFolder(filePath, content) {
 
 }
 
+function checkFileRootAndUpdateFile(filePath, content) {
+
+  let fileFolder = `${SETTINGS.buildFolder}/${filePath}`;
+  fileFolder = fileFolder.replace(fileFolder.split('/').pop(), '');
+
+  if (!fs.existsSync(fileFolder)) {
+
+    fs.mkdir(fileFolder, () => {
+      watch(filePath);
+      writeFileToBuildFolder(filePath, content);
+      console.log(`folder ${fileFolder} created.`);
+    });
+
+  } else {
+    writeFileToBuildFolder(filePath, content);
+  }
+
+}
+
 function updateFile(filePath) {
 
   fileProcessor.parseFile(filePath).then((content) => {
 
-    writeFileToBuildFolder(filePath, SETTINGS.release ? ReleaseParser.parse(content) : content);
+    checkFileRootAndUpdateFile(filePath, SETTINGS.release ? ReleaseParser.parse(content) : content);
 
   });
 
@@ -121,7 +140,7 @@ function watch(path='.') {
 
     } else {
 
-      fs.copyFile(filePath, `build/${filePath}`, () => {
+      fs.copyFile(filePath, `${SETTINGS.buildFolder}/${filePath}`, () => {
         console.log(`${filePath} copied.`);
       });
 

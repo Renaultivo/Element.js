@@ -121,6 +121,8 @@ class Parser {
 
         } catch(error) {}
 
+      } else if (textBuffer.trim() == 'import ') {
+
       } else {
 
         textBuffer += buffer[i];
