@@ -402,6 +402,11 @@ function parseJSXContent(content, identation={ current: '', addictional: '' }) {
 
   let text = '';
 
+  if (content == null
+    || content == undefined) {
+    return '';
+  }
+
   if (Array.isArray(content)) {
 
     content.forEach((item) => {
@@ -471,7 +476,7 @@ function HTML_to_ElementJS_Transpiler(contentList, additionalIdentation='') {
   contentList.forEach((content) => {
 
     if (content.type == 'tag') {
-
+      
       content.identation += additionalIdentation;
       finalCode += transpileHTMLTag(content);
 
