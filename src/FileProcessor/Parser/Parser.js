@@ -1,7 +1,7 @@
 const { createCSSObject } = require("../../libs/elementManager");
 const { getScope } = require("./common/ScopeHandler");
 const { skipEmptyScapes } = require("./common/TextHandler");
-const { getHTMLTag, HTML_to_ElementJS_Transpiler } = require("./html/HTMLParser");
+const { getHTMLTag, HTML_to_ElementJS_Transpiler, transpileHTMLTag } = require("./html/HTMLParser");
 
 const invalidNameChars = [
   ' ', '<', '>', '=', '/', '\\', '-', '"', '\'', '?', ';', ','
@@ -33,17 +33,19 @@ function getPreviousTabSpace(buffer, index, ignore=0) {
 
 function checkForJSXTag(buffer, index) {
 
-  let jsxTag = String('<JSX>').split('');
+  let nameLength = 0;
 
-  for (let i=0; i<jsxTag.length; i++) {
-
-    if (buffer[index + i] != jsxTag[i]) {
-      return false;
+  for (; index<buffer.length; index++) {
+    
+    if (invalidNameChars.indexOf(buffer[index]) != -1) {
+      break;
     }
+
+    nameLength++;
 
   }
 
-  return true;
+  return nameLength > 0;
 
 }
 
@@ -53,14 +55,25 @@ class Parser {
 
   }
 
+  prepare(text) {
+
+    text = text.replace(/(for)\s\((.*?)\)/gm, (match, a, b) => {
+      return match.replace(/\</gm, '_({0})_');
+    });
+
+    return text;
+
+  }
+
   parse(originalFileContent) {
     
+    originalFileContent = this.prepare(originalFileContent);
+
     const buffer = originalFileContent.split('');
     
     let finalText = '';
 
     let textBuffer = '';
-
     
     function saveTextBuffer() {
 
@@ -77,14 +90,14 @@ class Parser {
 
         saveTextBuffer();
 
-        if (checkForJSXTag(buffer, i)) {
+        if (checkForJSXTag(buffer, i+1)) {
 
           let currentTag = getHTMLTag(buffer, i, getPreviousTabSpace(buffer, i-1, 2));
           i = currentTag.index;
+          
+          let currentTagCode = currentTag.tag != 'JSX' ? transpileHTMLTag(currentTag) : HTML_to_ElementJS_Transpiler(currentTag.content);
 
-          let currentTagCode = HTML_to_ElementJS_Transpiler(currentTag.content, getPreviousTabSpace(buffer, i-1));
-
-          currentTagCode = currentTagCode.substr(0, currentTagCode.length-1);
+          currentTagCode = currentTagCode.substr(1, currentTagCode.length-2);
 
           textBuffer += currentTagCode;
 
@@ -93,8 +106,27 @@ class Parser {
         }
 
       } else if (invalidNameChars.indexOf(buffer[i]) != -1) {
-        textBuffer += buffer[i];
+        
         saveTextBuffer();
+
+        if (buffer[i] == '/' && buffer[i+1] == '*') {
+            
+          
+          for (; (buffer[i] != '*' || buffer[i+1] != '/') && i<buffer.length; i++) {
+            finalText += buffer[i];
+          }
+          
+          textBuffer += buffer[i];
+          saveTextBuffer();
+
+          continue;
+
+        }
+
+        textBuffer += buffer[i];
+
+        saveTextBuffer();
+
       } else if (textBuffer.trim() == 'createCSSObject({') {
 
         const cssObjectScope = getScope(buffer, i+1, ['{', '}'], 1);
@@ -133,7 +165,7 @@ class Parser {
 
     saveTextBuffer();
 
-    return finalText;
+    return finalText.replace(/_\(\{0\}\)_/gm, '<');
   
   }
 

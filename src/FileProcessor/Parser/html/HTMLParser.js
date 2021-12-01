@@ -167,7 +167,7 @@ function parseProps(propsAsText) {
 function getHTMLTagNameAndProps(buffer, index) {
 
   const name = getName(buffer, index);
-  const props = getScope(buffer, name.index, ['<', '>'], 0, {
+  const props = getScope(buffer, name.index, ['<', '>'], -1, {
     previous: '=',
     next: ''
   });
@@ -507,7 +507,7 @@ function getHTMLTag(buffer, index, identation='') {
     buffer: buffer,
     index: tagNameAndProps.index+1,
     identation,
-    counter: 0
+    counter: -1
   });
 
   const data = {
@@ -531,4 +531,6 @@ function getHTMLTag(buffer, index, identation='') {
 }
 
 exports.getHTMLTag = getHTMLTag;
+exports.transpileHTMLTag = transpileHTMLTag;
+exports.parseJSXContent = parseJSXContent;
 exports.HTML_to_ElementJS_Transpiler = HTML_to_ElementJS_Transpiler;

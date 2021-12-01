@@ -1,15 +1,3 @@
-function insertSemiCollonAfterBracket(matche, _, _) {
-  return matche.replace('}', '};');
-}
-
-function insertSemiCollonAfterScope(matche, _, _) {
-  return matche.replace(']', '];');
-}
-
-function insertSemiCollonAfterParentesies(matche, _, _) {
-  return matche.replace(')', ');');
-}
-
 function fixImports(match, a, b) {
 
   if (match.indexOf('.js') == -1) {
@@ -36,6 +24,7 @@ class ReleaseParser {
     // remove single line comments ( // )
     result = result.replace(/\n\/\/(.*?)\n/g, '');
     result = result.replace(/\s\/\/(.*?)\n/g, '');
+    result = result.replace(/\/\/(.*?)\n/g, '');
 
     // remove double space
     result = result.replace(/\s\s/g, '');
@@ -50,14 +39,66 @@ class ReleaseParser {
     // (pretty common on "inline-functions")
     result = result.replace(/else/g, '  else');
     result = result.replace(/catch/g, '  catch');
-    result = result.replace(/}[a-zA-Z]/g, insertSemiCollonAfterBracket);
-    result = result.replace(/}\s[a-zA-Z]/g, insertSemiCollonAfterBracket);
+
+    result = result.replace(/}[a-zA-Z]/g, (matche, a, ) => {
+      return matche.replace('}', '};');
+    });
+
+    result = result.replace(/}\s[a-zA-Z]/g, (matche, a, ) => {
+      return matche.replace('}', '};');
+    });
 
     result = result.replace(/\]\s[a-zA-Z]/g, '];');
-    result = result.replace(/\][a-zA-Z]/g, insertSemiCollonAfterScope);
 
-    result = result.replace(/\)\s[a-zA-Z]/g, insertSemiCollonAfterParentesies);
-    result = result.replace(/\)[a-zA-Z]/g, insertSemiCollonAfterParentesies);
+    result = result.replace(/\][a-zA-Z]/g, (matche, a, ) => {
+      return matche.replace(']', '];');
+    });
+
+    result = result.replace(/\)\s[a-zA-Z]/g, (matche, a, ) => {
+      return matche.replace(')', ');');
+    });
+
+    result = result.replace(/\)[a-zA-Z]/g, (matche, a, ) => {
+      return matche.replace(')', ');');
+    });
+
+    result = result.replace(/\}\;(.*?)[from|const|let|var]/g, (matche, a, ) => {
+      return matche.replace('};', '} ');
+    });
+
+    result = result.replace(/\};(\s*)\}/g, (matche, a, ) => {
+      return matche.replace('};', '}');
+    });
+
+    result = result.replace(/\}(\s*)function/g, (matche, a, ) => {
+      return matche.replace('}', '};');
+    });
+
+    result = result.replace(/\}(\s*)[a-zA-Z]/g, (matche, a, ) => {
+      return matche.replace('}', '};');
+    });
+
+    result = result.replace(/\}\;(\s*)else/g, (matche, a, ) => {
+      return matche.replace('};', '}');
+    });
+
+    result = result.replace(/\}\;(\s*)catch/g, (matche, a, ) => {
+      return matche.replace('};', '}');
+    });
+
+    result = result.replace(/\}\;(\s*)from/g, (matche, a, ) => {
+      return matche.replace('};', '}');
+    });
+
+    result = result.replace(/\/\*(.*?)\*\//g, (matche, a, ) => {
+      return '';
+    });
+
+    // fix it
+    result = result.replace(/\}(\s*)if/g, (matche, a, ) => {
+      return matche.replace('}', '};');
+    });
+
 
     return result;
 

@@ -1,1 +1,28 @@
-const user = { name: 'John', age: 20};const styles = {"body":"JuQKtwy","header":"ynZeZFD","main":{"li":"OQhKYCP"}};createElement({tag:"style",content:'.JuQKtwy {top:0;left:0;width:50%;} .ynZeZFD {height:200px;position:fixed;background-color:#222222;} .OQhKYCP {color:orange;} '}).addTo(document.head);function Header(props) { return (createElement({ tag: 'header', style: styles.header, attributes: {}, content: [ createElement({ tag: 'nav', attributes: {}, content: [ createElement({ tag: 'ul', attributes: {}, content: [ createElement({ tag: 'li', attributes: {}, content: [ 'Logged as ', user.name, ] }), createElement({ tag: 'li', attributes: {}, content: [ 'Home', ] }), createElement({ tag: 'li', attributes: {}, content: [ 'Donwloads', ] }), createElement({ tag: 'li', attributes: {}, content: [ 'Sign out', ] }), ] }), ] }), ] }) );}const Index = (createElement({ tag: 'html', attributes: {}, content: [ createElement({ tag: 'head', attributes: {}, content: [ createElement({ tag: 'meta', attributes: {charset: "utf-8", }, content: [ ] }), createElement({ tag: 'title', attributes: {}, content: [ 'Name', ] }), ] }), createElement({ tag: 'body', class: "flexBoxAlign flexWrap", style: styles.body, attributes: {}, content: [ Header({ data: user, content: null, isEmpty: true }), createElement({ tag: 'div', attributes: {}, content: [ 'Letme seehow it\'s going to handle spaces', ] }), ] }), ] }));
+const main = (
+    createElement({
+    tag: 'html',
+    attributes: {
+    
+    },
+    content: [    
+    createElement({
+      tag: 'head',
+      attributes: {
+      
+      },
+      content: [
+      ]
+    }),    
+    createElement({
+      tag: 'body',
+      attributes: {
+      
+      },
+      content: [
+      ]
+    }),
+    ]
+  })
+);
+
+main.addTo(document.body);
