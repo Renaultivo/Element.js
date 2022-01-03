@@ -117,6 +117,10 @@ function watch(path='.') {
 
   fs.watch(path, null, (event, filename) => {
 
+    if (!filename) {
+      return;
+    }
+
     const ext = filename.split(".").pop();
     const filePath = `${path}/${filename}`;
     

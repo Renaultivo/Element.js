@@ -1,7 +1,7 @@
 const { createCSSObject } = require("../../libs/elementManager");
 const { getScope } = require("./common/ScopeHandler");
 const { skipEmptyScapes } = require("./common/TextHandler");
-const { getHTMLTag, HTML_to_ElementJS_Transpiler, transpileHTMLTag } = require("./html/HTMLParser");
+const { getHTMLTag, HTML_to_ElementJS_Transpiler, transpileHTMLTag, parseJSXContent, parseJSXFunctionCall } = require("./html/HTMLParser");
 
 const invalidNameChars = [
   ' ', '<', '>', '=', '/', '\\', '-', '"', '\'', '?', ';', ','
@@ -95,9 +95,19 @@ class Parser {
           let currentTag = getHTMLTag(buffer, i, getPreviousTabSpace(buffer, i-1, 2));
           i = currentTag.index;
           
-          let currentTagCode = currentTag.tag != 'JSX' ? transpileHTMLTag(currentTag) : HTML_to_ElementJS_Transpiler(currentTag.content);
+          let currentTagCode = (currentTag.tag[0] == String(currentTag.tag[0]).toUpperCase() ? parseJSXFunctionCall(currentTag) : parseJSXContent(currentTag));
 
-          currentTagCode = currentTagCode.substr(1, currentTagCode.length-2);
+          // if (currentTag.tag == 'JSX') {
+          //   currentTagCode = HTML_to_ElementJS_Transpiler(currentTag.content);
+          // } else {
+          //   currentTagCode = transpileHTMLTag(currentTag);
+          // }
+
+          if (currentTagCode == '') {
+            currentTagCode = transpileHTMLTag(currentTag);
+          }
+
+          currentTagCode = currentTagCode.substring(1, currentTagCode.length-1);
 
           textBuffer += currentTagCode;
 

@@ -534,3 +534,5 @@ exports.getHTMLTag = getHTMLTag;
 exports.transpileHTMLTag = transpileHTMLTag;
 exports.parseJSXContent = parseJSXContent;
 exports.HTML_to_ElementJS_Transpiler = HTML_to_ElementJS_Transpiler;
+exports.parseJSXFunctionCall = parseJSXFunctionCall;
+
