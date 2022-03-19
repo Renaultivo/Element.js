@@ -185,6 +185,8 @@ function getHTMLTagNameAndProps(buffer, index) {
 
 function getHTMLTagContent(props) {
 
+  const initialCounter = props.counter;
+
   let content = new Array();
 
   let textBuffer = '';
@@ -273,12 +275,8 @@ function getHTMLTagContent(props) {
         props.index = currentTag.index;
 
         if (currentTag.name == props.currentTagName) {
-          
-          props.counter--;
-          
-          if (props.counter < 0) {
+
             break;
-          }
 
         }
 

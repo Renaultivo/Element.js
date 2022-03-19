@@ -1,12 +1,11 @@
+const data = {
+  name: 'John'
+}
+
 const main = (
-  <html>
-    <head>
-
-    </head>
-    <body>
-
-    </body>
-  </html>
+  <div id="main">
+    Hi, {data.name}!
+  </div>
 );
 
 main.addTo(document.body);
