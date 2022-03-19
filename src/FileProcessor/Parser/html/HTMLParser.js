@@ -390,7 +390,7 @@ function parseJSXFunctionCall(content, identation='  ') {
 
   return `\n${identation}${content.tag}({` + 
     `\n${identation}  ${props != '' ? props + ',' : ''}` + 
-    `\n${identation}  content: [${content.content}],` + 
+    (content.content.length > 0 ? `\n${identation}  content: [${content.content}],` : '') + 
     `\n${identation}  isEmpty: ${content.isEmpty}` + 
   `\n${identation}}),`;
 
@@ -464,7 +464,7 @@ function transpileHTMLTag(content) {
         `\n${content.identation}  },` : ''
     ) +
     (
-      content != '' ?
+      content.content.length > 0 && !content.isEmpty ?
         `\n${content.identation}  content: [` + 
         `${ content.isEmpty ? '' : parseJSXContent(content.content, { current: content.identation, addictional: '  ' })}` + 
         `\n${content.identation}  ]` : ''

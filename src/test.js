@@ -1,1 +1,5 @@
-  <div id="test" src="123" ripple="green" placeholder="text" class="test">test, 123</div>
+<html>
+  <head>
+    <meta charset="utf-8" />
+  </head>
+</html>

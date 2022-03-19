@@ -1,5 +1,5 @@
-# Element.JSX
-JSX to ElementManager.js functions parser.
+# Element.jsx
+A JSX Transpiler - JSX to ElementManager.js functions parser.
 
 ### Creating an empty element and add it to body
 ```javascript
@@ -18,9 +18,6 @@ const main = (
   createElement({
     tag: 'div',
     id: "main",
-    attributes: {
-    
-    },
     content: [
       'Hello, World!',
     ]
@@ -49,17 +46,12 @@ let styles = createCSSObject({
 #### Generated code
 ```javascript
 
-let styles = {"element":"_YjzLgZ"};
-createElement({tag:"style",content:'._YjzLgZ {width:200px;height:200px;background-color:orange;} '}).addTo(document.head);
+let styles = {"element":"y_eDHoI"};
+createElement({tag:"style",content:'.y_eDHoI {width:200px;height:200px;background-color:orange;} '}).addTo(document.head);
 
 createElement({
   tag: 'div',
-  style: styles.element,
-  attributes: {
-  
-  },
-  content: [
-  ]
+  style: styles.element
 })
 
 ```
