@@ -353,7 +353,7 @@ function parserJSXPropToElementJSProp(prop) {
 
 const propParser = {
   [DATA_TYPE.tag]: (data) => {
-    return `${data.name}: ${transpileHTMLTag(data)}`;
+    return `${data.iden}${data.name}: ${transpileHTMLTag(data)}`;
   },
   [DATA_TYPE.string]: (data) => {
     return `${data.name}: ${data.quote}${data.content}${data.quote}`;
@@ -447,7 +447,7 @@ function transpileHTMLTag(content) {
       if (elementJSProps.indexOf(prop.name) != -1) {
         props +=  '\n  ' + content.identation + parserJSXPropToElementJSProp(prop);
       } else {
-        attributes += '\n  ' + content.identation + parserJSXPropToElementJSProp(prop);
+        attributes += '\n    ' + content.identation + parserJSXPropToElementJSProp(prop);
       }
 
     });
@@ -457,12 +457,18 @@ function transpileHTMLTag(content) {
   return `\n${content.identation}createElement({` + 
     `\n${content.identation}  tag: '${content.tag}',` + 
     `${props}` + 
-    `\n${content.identation}  attributes: {` + 
-    `\n${content.identation}  ${attributes}` + 
-    `\n${content.identation}  },` + 
-    `\n${content.identation}  content: [` + 
+    (
+      attributes != '' ?
+        `\n${content.identation}  attributes: {` + 
+        `${content.identation}  ${attributes}` + 
+        `\n${content.identation}  },` : ''
+    ) +
+    (
+      content != '' ?
+        `\n${content.identation}  content: [` + 
         `${ content.isEmpty ? '' : parseJSXContent(content.content, { current: content.identation, addictional: '  ' })}` + 
-    `\n${content.identation}  ]` + 
+        `\n${content.identation}  ]` : ''
+    ) + 
     `\n${content.identation}}),`;
 
 }
@@ -511,15 +517,11 @@ function getHTMLTag(buffer, index, identation='') {
   const data = {
     tag: tagNameAndProps.name,
     props: tagNameAndProps.props,
-    identation: '  ',
+    identation,
     content: tagContent.content
   }
 
   index = tagContent.index;
-
-  let tagAsJSCode = HTML_to_ElementJS_Transpiler([data], identation);
-
-  tagAsJSCode = tagAsJSCode.substr(0, tagAsJSCode.length-1);
 
   return {
     ...data,
