@@ -2,10 +2,33 @@ const { createCSSObject } = require("../../libs/elementManager");
 const { getScope } = require("./common/ScopeHandler");
 const { skipEmptyScapes } = require("./common/TextHandler");
 const { getHTMLTag, HTML_to_ElementJS_Transpiler, transpileHTMLTag, parseJSXContent, parseJSXFunctionCall } = require("./html/HTMLParser");
+const { State } = require("./state/State");
+
+const alphabetRegex = new RegExp(/[a-zA-Z]/);
 
 const invalidNameChars = [
   ' ', '<', '>', '=', '/', '\\', '-', '"', '\'', '?', ';', ','
 ];
+
+function getNameBackwards(buffer, index) {
+
+  let name = '';
+
+  for (; !alphabetRegex.test(buffer[index]) && index-1 > 0; index--);
+
+  for (; index>0; index--) {
+
+    if (alphabetRegex.test(buffer[index])) {
+      name = buffer[index] + name;
+    } else {
+      break;
+    }
+
+  }
+
+  return name;
+  
+}
 
 function getPreviousTabSpace(buffer, index, ignore=0) {
 
@@ -74,6 +97,8 @@ class Parser {
     let finalText = '';
 
     let textBuffer = '';
+
+    let states = new Array();
     
     function saveTextBuffer() {
 
@@ -163,7 +188,19 @@ class Parser {
 
         } catch(error) {}
 
-      } else if (textBuffer.trim() == 'import ') {
+      } else if (textBuffer.trim() == 'import') {
+      } else if (textBuffer.trim() == 'State(') {
+
+        const name = getNameBackwards(buffer, i-8);        
+        const value = getScope(buffer, i, ['(', ')'], -1);
+        
+        i = value.index;
+
+        states.push(name);
+
+        textBuffer = textBuffer.replace(/State\(/gm, '') + `(${value.content})`;
+
+        saveTextBuffer();
 
       } else {
 
@@ -175,7 +212,10 @@ class Parser {
 
     saveTextBuffer();
 
-    return finalText.replace(/_\(\{0\}\)_/gm, '<');
+    finalText = finalText.replace(/_\(\{0\}\)_/gm, '<');
+    finalText = State(finalText, states);
+
+    return finalText;
   
   }
 
