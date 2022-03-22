@@ -43,6 +43,10 @@ function writeFileToBuildFolder(filePath, content) {
           }
         );
 
+    } else {
+
+      console.err(`Failed to update "${filePath}"`);
+
     }
 
   });

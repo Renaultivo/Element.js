@@ -109,9 +109,24 @@ class Parser {
 
     }
 
+    let stateRegExp = new RegExp('State\\(', 'gm');
+
     for (let i=0; i<buffer.length; i++) {
 
-      if (buffer[i] == '<') {
+      if (stateRegExp.test(textBuffer.trim())) {
+        
+        const name = getNameBackwards(buffer, i-8);        
+        const value = getScope(buffer, i, ['(', ')'], -1);
+        
+        i = value.index;
+
+        states.push(name);
+
+        textBuffer = textBuffer.replace(/State\(/gm, '') + `(${value.content})`;
+
+        saveTextBuffer();
+
+      } else if (buffer[i] == '<') {
 
         saveTextBuffer();
 
@@ -138,6 +153,7 @@ class Parser {
 
         } else {
           textBuffer += buffer[i];
+          saveTextBuffer();
         }
 
       } else if (invalidNameChars.indexOf(buffer[i]) != -1) {
@@ -189,19 +205,6 @@ class Parser {
         } catch(error) {}
 
       } else if (textBuffer.trim() == 'import') {
-      } else if (textBuffer.trim() == 'State(') {
-
-        const name = getNameBackwards(buffer, i-8);        
-        const value = getScope(buffer, i, ['(', ')'], -1);
-        
-        i = value.index;
-
-        states.push(name);
-
-        textBuffer = textBuffer.replace(/State\(/gm, '') + `(${value.content})`;
-
-        saveTextBuffer();
-
       } else {
 
         textBuffer += buffer[i];

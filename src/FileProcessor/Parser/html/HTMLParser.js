@@ -169,7 +169,7 @@ function getHTMLTagNameAndProps(buffer, index) {
   const name = getName(buffer, index);
   const props = getScope(buffer, name.index, ['<', '>'], -1, {
     previous: '=',
-    next: ''
+    next: '='
   });
 
   index = props.index;
@@ -220,9 +220,12 @@ function getHTMLTagContent(props) {
 
   }
 
+  let alphabet = new RegExp(/[a-zA-Z]/gm);
+
   for (;  props.index < props.buffer.length ; props.index++) {
 
-    if (props.buffer[props.index] == '<') {
+    if (props.buffer[props.index] == '<'
+      && props.buffer[props.index+1] != '=') {
       
       saveTextBuffer();
 
@@ -464,7 +467,7 @@ function transpileHTMLTag(content) {
         `\n${content.identation}  },` : ''
     ) +
     (
-      content.content.length > 0 && !content.isEmpty ?
+      content.content != null && content.content.length > 0 && !content.isEmpty ?
         `\n${content.identation}  content: [` + 
         `${ content.isEmpty ? '' : parseJSXContent(content.content, { current: content.identation, addictional: '  ' })}` + 
         `\n${content.identation}  ]` : ''
