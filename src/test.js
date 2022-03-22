@@ -1,16 +1,7 @@
-let clicks = State(0);
+let status = State("Loading");
 
-function increment() {
-  clicks = clicks+1;
-}
+<div>Status: {status}</div>
 
-const Root = (
-  <html>
-    <head>
-      <meta charset="utf-8" />
-    </head>
-    <body>
-      <h1>You have clicked {clicks} times!</h1>
-    </body>
-  </html>
-);
+setTimeout(() => {
+  status = "Loaded";
+}, 2000);

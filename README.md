@@ -55,3 +55,39 @@ createElement({
 })
 
 ```
+
+
+### State Managment
+
+```javascript
+
+let status = State("Loading");
+
+<div>Status: {status}</div>
+
+setTimeout(() => {
+  status = "Loaded";
+}, 2000);
+
+```
+#### Generated code
+```javascript
+
+let status = ("Loading");
+let __obsarvable_status_Nodes = [];
+function $update_status_() {__obsarvable_status_Nodes.forEach((node) => {node.nodeValue=status;});}
+
+createElement({
+  tag: 'div',
+  content: [
+    'Status: ',
+    (() => {__obsarvable_status_Nodes.push(document.createTextNode(status));return __obsarvable_status_Nodes[__obsarvable_status_Nodes.length-1];})(),
+  ]
+})
+
+setTimeout(() => {
+  status = "Loaded";
+  $update_status_();
+}, 2000);
+
+```
