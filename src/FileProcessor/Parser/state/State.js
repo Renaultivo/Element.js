@@ -5,7 +5,7 @@ function State(fileContent, definedStates) {
     fileContent = fileContent.replace(
       new RegExp(`[let|var](.*?)${state}(.*?)=(.*?)[\n|;]`, 'gm'),
       (value) => {
-        return value + `\n${value.split(' ')[0]} __obsarvable_${state}_Nodes = [];` + 
+        return value + `\nconst __obsarvable_${state}_Nodes = [];` + 
         `\nfunction $update_${state}_() {` +
           `__obsarvable_${state}_Nodes.forEach((node) => {` +
             `node.nodeValue=${state};` +

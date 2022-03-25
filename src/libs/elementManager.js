@@ -128,7 +128,10 @@ function createCSSObject(jsObject) {
 
         if (typeof jsObject[key][prop][firstKey] == 'object') {
 
-          cssObject[key][prop] = createCSSObject(jsObject[key][prop]);
+          let style = createCSSObject(jsObject[key][prop]);
+
+          cssObject[key][prop] = style.cssObject;
+          cssText += style.cssText;
 
         } else {
 
