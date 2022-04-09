@@ -180,13 +180,21 @@ class Parser {
 
       } else if (textBuffer.trim() == 'createCSSObject({') {
 
-        const cssObjectScope = getScope(buffer, i+1, ['{', '}'], 1);
+        const cssObjectScope = getScope(buffer, i, ['{', '}'], 1);
+
+        console.log(cssObjectScope);
 
         let template = `({ ${cssObjectScope.content} })`;
         template = template.replace(/\s/g, ' ');
         template = template.replace(/\n/g, ' ');
         template = template.replace(/\\n/g, '');
         template = template.replace(/'/g, '"');
+        template = template.replace(/\`(.*?)\`/g, (match) => {
+          return `")<-${match}->("`
+        });
+        template = template.replace(/([a-zA-Z]*)\:/gm, (match) => {
+          return `"${match.split(':')[0]}":`
+        });
 
         let content = 'default';
 
@@ -195,6 +203,10 @@ class Parser {
           content = eval(template);
 
           const cssObject = createCSSObject(content);
+
+          cssObject.cssText = cssObject.cssText.replace(/\)\<\-(.*?)\-\>\(/g, (match) => {
+            return `'+${match.substring(3, match.length-3)}+'`;
+          });
 
           textBuffer = ` ${JSON.stringify(cssObject.cssObject)};` + 
             `\ncreateElement({tag:"style",content:'${cssObject.cssText}'}).addTo(document.head)`;
