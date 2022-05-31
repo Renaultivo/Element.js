@@ -179,7 +179,7 @@ class Parser {
 
       } else if (textBuffer.trim() == 'createCSSObject({') {
 
-        const cssObjectScope = getScope(buffer, i, ['{', '}'], 1);
+        const cssObjectScope = getScope(buffer, i, ['{', '}'], 0);
 
         console.log(cssObjectScope);
 
