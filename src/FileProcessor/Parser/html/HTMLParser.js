@@ -124,7 +124,7 @@ function parseProps(propsAsText) {
 
       } else if (buffer[index] == '{') {
 
-        const scope = getScope(buffer, index+1, ['{', '}'], 1);
+        const scope = getScope(buffer, index+1, ['{', '}'], 0);
 
         index = scope.index+1;
 

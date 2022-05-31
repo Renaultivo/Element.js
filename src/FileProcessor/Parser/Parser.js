@@ -109,11 +109,9 @@ class Parser {
 
     }
 
-    let stateRegExp = new RegExp('State\\(', 'gm');
-
     for (let i=0; i<buffer.length; i++) {
 
-      if (stateRegExp.test(textBuffer.trim())) {
+      if (textBuffer.trim() == 'State(') {
         
         const name = getNameBackwards(buffer, i-8);        
         const value = getScope(buffer, i, ['(', ')'], -1);
@@ -126,7 +124,8 @@ class Parser {
 
         saveTextBuffer();
 
-      } else if (buffer[i] == '<') {
+      } else if (buffer[i] == '<' && (!/[\'|\"|\`|\!|\/|\{|\}|\\|\/]/.test(buffer[i-1]))
+        && (!/[a-zA-Z]/.test(buffer[i-1]))) {
 
         saveTextBuffer();
 
@@ -216,7 +215,6 @@ class Parser {
 
         } catch(error) {}
 
-      } else if (textBuffer.trim() == 'import') {
       } else {
 
         textBuffer += buffer[i];

@@ -23,7 +23,7 @@ function getScope(buffer, index, delimiters = ['{', '}'], counter=0, ignoreIf={
 
       counter--;
       
-      if (counter <= 0) {
+      if (counter < 0) {
         break;
       }
 
