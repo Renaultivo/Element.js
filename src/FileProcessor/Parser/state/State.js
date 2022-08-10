@@ -3,7 +3,7 @@ function State(fileContent, definedStates) {
   definedStates.forEach((state) => {
 
     fileContent = fileContent.replace(
-      new RegExp(`[let|var](.*?)${state}(.*?)=(.*?)[\n|;]`, 'gm'),
+      new RegExp(`(let|var)(\\s+)${state}(\\s|\\=)(.*?)(\\n|\;)`, 'gm'),
       (value) => {
         return value + `\nconst __obsarvable_${state}_Nodes = [];` + 
         `\nfunction $update_${state}_() {` +
@@ -15,7 +15,7 @@ function State(fileContent, definedStates) {
     );
 
     fileContent = fileContent.replace(
-      new RegExp(`${state}\\,`, 'gm'),
+      new RegExp(`(\\s+)${state}\\,`, 'gm'),
       `(() => {` +
         `__obsarvable_${state}_Nodes.push(` +
         `document.createTextNode(${state})` +
@@ -27,7 +27,7 @@ function State(fileContent, definedStates) {
     let firstOccurrence = true;
 
     fileContent = fileContent.replace(
-      new RegExp(`${state} =(.*?)[\n|;]`, 'gm'),
+      new RegExp(`(\\s+)${state}(\\s+)=(.*?)[\n|;]`, 'gm'),
       (value) => {
 
         if (firstOccurrence) {

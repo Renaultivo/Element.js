@@ -76,9 +76,7 @@ function checkFileRootAndUpdateFile(filePath, content) {
 function updateFile(filePath) {
 
   fileProcessor.parseFile(filePath).then((content) => {
-
     checkFileRootAndUpdateFile(filePath, SETTINGS.release ? ReleaseParser.parse(content) : content);
-
   });
 
 }

@@ -16,6 +16,11 @@ class FileProcessor {
 
       getFileText(fileName).then(result => {
 
+        if (result.indexOf('!Element.js') != -1) {
+          resolve(result);
+          return;
+        }
+
         let parserResult = this.parser.parse(result);
         
         resolve(parserResult);
