@@ -202,7 +202,7 @@ function getHTMLTagContent(props) {
 
       content.push({
         type: DATA_TYPE.string,
-        quote: "'",
+        quote: "`",
         content: (
           textBuffer
             .replace(/\n/g, '\\n')
