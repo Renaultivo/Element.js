@@ -72,6 +72,32 @@ function checkForJSXTag(buffer, index) {
 
 }
 
+function getLiteralString(buffer, index, ignore=0) {
+
+  let stringLiteralContent = '';
+
+  let quoteChar = buffer[index];
+
+  // skip string first quote before starting loop
+  index++;
+
+  for (;index<buffer.length;index++) {
+
+    if (buffer[index] == quoteChar) {
+      break;
+    }
+
+    stringLiteralContent += buffer[index];
+
+  }
+
+  return {
+    literalStringContent: (quoteChar + stringLiteralContent + quoteChar),
+    index
+  }
+
+}
+
 class Parser {
 
   constructor() {
@@ -124,7 +150,17 @@ class Parser {
 
         saveTextBuffer();
 
-      } else if (buffer[i] == '<' && (!/[\'|\"|\`|\!|\/|\{|\}|\\|\/]/.test(buffer[i-1]))
+      }
+      else if (/[´'"`]/.test(buffer[i])) {
+
+        const literalString = getLiteralString(buffer, i);
+
+        i = literalString.index;
+        textBuffer += literalString.literalStringContent;
+        saveTextBuffer();
+
+      }
+      else if (buffer[i] == '<' && (!/[\'|\"|\`|\!|\/|\{|\}|\\|\/]/.test(buffer[i-1]))
         && (!/[a-zA-Z]/.test(buffer[i-1]))) {
 
         saveTextBuffer();
@@ -155,7 +191,8 @@ class Parser {
           saveTextBuffer();
         }
 
-      } else if (invalidNameChars.indexOf(buffer[i]) != -1) {
+      }
+      else if (invalidNameChars.indexOf(buffer[i]) != -1) {
         
         saveTextBuffer();
 
@@ -177,7 +214,8 @@ class Parser {
 
         saveTextBuffer();
 
-      } else if (textBuffer.trim() == 'createCSSObject({') {
+      }
+      else if (textBuffer.trim() == 'createCSSObject({') {
 
         const cssObjectScope = getScope(buffer, i, ['{', '}'], 0);
 
@@ -207,7 +245,7 @@ class Parser {
             return `'+${match.substring(3, match.length-3)}+'`;
           });
 
-          textBuffer = ` ${JSON.stringify(cssObject.cssObject)};` + 
+          textBuffer = ` parseObjectKeysToStyleString(${JSON.stringify(cssObject.cssObject)});` + 
             `\ncreateElement({tag:"style",content:'${cssObject.cssText}'}).addTo(document.head)`;
           saveTextBuffer();
 
@@ -215,7 +253,8 @@ class Parser {
 
         } catch(error) {}
 
-      } else {
+      }
+      else {
 
         textBuffer += buffer[i];
 

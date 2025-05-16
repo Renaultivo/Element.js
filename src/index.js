@@ -124,6 +124,11 @@ function watch(path='.') {
     }
 
     const ext = filename.split(".").pop();
+
+    if (ext == filename) {
+      return;
+    }
+
     const filePath = `${path}/${filename}`;
     
     if (ext.toLowerCase() == 'js'
