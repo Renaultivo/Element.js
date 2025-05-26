@@ -12,5 +12,3 @@ export function getTextUntil(buffer, index, delimiter) {
   };
 
 }
-
-exports.getTextUntil = getTextUntil;
