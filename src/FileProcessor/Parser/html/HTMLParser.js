@@ -40,6 +40,31 @@ function getName(buffer, index) {
 
 }
 
+
+
+function getJSXPropName(buffer, index) {
+
+  const jsxInvalidNameChars = [
+    ' ', '<', '>', '=', '/', '\\', '"', '\'', '?', ';', ','
+  ];
+
+  let name = '';
+
+  index = skipEmptyScapes(buffer, index);
+  
+  for (; index < buffer.length && jsxInvalidNameChars.indexOf(buffer[index]) == -1; index++) {
+    name += buffer[index];
+  }
+
+  name = name.trim();
+
+  return {
+    name,
+    index
+  };
+
+}
+
 function checkForEqualChar(buffer, index) {
 
   index = skipEmptyScapes(buffer, index);
@@ -91,7 +116,7 @@ function parseProps(propsAsText) {
 
     index = skipEmptyScapes(buffer, index);
 
-    let propName = getName(buffer, index);
+    let propName = getJSXPropName(buffer, index);
     let equalCharSearchResult = checkForEqualChar(buffer, propName.index);
 
 
@@ -321,11 +346,11 @@ function parserJSXPropToElementJSProp(prop) {
   let text = '';
 
   if (prop.type == DATA_TYPE.string) {
-    text = `${prop.name}: ${prop.quote}${prop.content}${prop.quote},`;
+    text = `"${prop.name}": ${prop.quote}${prop.content}${prop.quote},`;
   } else if (prop.type == DATA_TYPE.jsx_scope) {
-    text = `${prop.name}: ${prop.content},`;
+    text = `"${prop.name}": ${prop.content},`;
   } else if (prop.type == DATA_TYPE.no_value) {
-    text = `${prop.name}: "${prop.name}"`;
+    text = `"${prop.name}": "${prop.name}"`;
   }
 
   return text;
